@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface KAA_AdsService : NSObject
+@interface KAA_AdsService : NSObject <NSURLConnectionDelegate>
 +(KAA_AdsService*) serviceWith: (KAA_Gateway*) gateway;
 +(KAA_AdsService*) service;
 

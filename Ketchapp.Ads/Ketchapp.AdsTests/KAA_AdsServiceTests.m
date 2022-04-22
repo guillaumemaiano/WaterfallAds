@@ -47,11 +47,6 @@ KAA_AdsService* adsService;
     XCTAssertEqual(adsService.waterfall.count, 0, @"Waterfall is not empty!");
 }
 
-- (void) testServiceFetchesWaterfallWithDefaultBlocks {
-    [adsService fetchInterstitialWaterfall];
-    XCTFail(@"Code missing");
-}
-
 - (void) testServiceFetchesWaterfallWithDefaultFailureBlock {
     void (^successBlock)(NSArray*)  = ^ (NSArray* waterfallArray) {
         return;
@@ -62,15 +57,24 @@ KAA_AdsService* adsService;
 }
 
 - (void) testServiceFetchesWaterfallWithCustomSuccessFailureBlocks {
+    
+    // Quick flaky test with no mocking
+    XCTestExpectation *waterfallLoaded = [self expectationWithDescription:@"waterfall loaded"];
+
     void (^successBlock)(NSArray*)  = ^ (NSArray* waterfallArray) {
+        XCTAssert([waterfallArray count] > 0);
+        [waterfallLoaded fulfill];
         return;
     };
     void (^failureblock)(NSString*)  = ^ (NSString* errorMessage) {
+        XCTFail("Failure block should not be invoked");
         return;
     };
     
     [adsService fetchInterstitialWaterfall: successBlock failsWith: failureblock];
-    XCTFail(@"Code missing");
+    [self waitForExpectationsWithTimeout:10 handler:^(NSError *error) {
+        NSLog(@"%@", error.description);
+    }];
 }
 
 @end

@@ -51,12 +51,52 @@
 }
 
 - (void) fetchInterstitialWaterfall: (void (^)(NSArray*)) successBlock failsWith: (void (^)(NSString*)) failureBlock {
-    NSError* error = self.error;
 
-    NSData *data = [NSData dataWithContentsOfURL: self.gateway.url];
-    NSMutableArray *json = [NSJSONSerialization JSONObjectWithData: data options:kNilOptions error:&error];
-    NSLog(@"json: %@", json);
-    // TODO: code me
+    // Create the request.
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://google.com"]];
+
+    // Create url connection and fire request
+    NSURLConnection *conn = [[NSURLConnection alloc] initWithRequest:request delegate:self];
+    //TODO: set the blocks for the delegates to use
+    //TODO: use NSURLSession
 }
 
+#pragma mark NSURLConnection Delegate Methods
+    
+NSMutableData * _responseData;
+
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response {
+    // This method is called each time there is a redirect so reinitializing it
+    // also serves to clear it
+    _responseData = [[NSMutableData alloc] init];
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
+    [_responseData appendData:data];
+}
+
+- (NSCachedURLResponse *)connection:(NSURLConnection *)connection
+                  willCacheResponse:(NSCachedURLResponse*)cachedResponse {
+    // Return nil to indicate not necessary to store a cached response for this connection
+    return nil;
+}
+
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection {
+    if (_responseData != nil) {
+        NSError* error = self.error;
+        // The request is complete and data has been received
+        NSMutableArray *json = [NSJSONSerialization JSONObjectWithData: _responseData options:kNilOptions error:&error];
+        if (json != nil) {
+            _waterfall = json;
+            NSLog(@"json: %@", json);
+        }
+    }
+}
+
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
+    // The request has failed for some reason!
+    // Check the error var
+    NSLog(@"Error on connection: %@", error.description);
+    _error = error;
+}
 @end
